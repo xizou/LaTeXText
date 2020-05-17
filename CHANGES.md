@@ -1,10 +1,17 @@
+### 2020-05-17 - v0.1.2.1 ###
+
+* Updated for Inkscape 1.0 support.
+
+* Removed Win64 specific tools.
+
+* Reorganized folder tree for simpler installation.
 
 ### 2019-03-09 - v0.1.2 ###
 
-* New option to directly enter a list of additional Latex packages to be 
+* New option to directly enter a list of additional Latex packages to be
   loaded without using a preamble file.
 
-* Win64 Installer: reduce size and only install the GTK DLLs that are 
+* Win64 Installer: reduce size and only install the GTK DLLs that are
   absolutely required.
 
 
@@ -14,7 +21,7 @@ Fixed two problems with the Windows installer.
 
     * Add the Adwaita icons.
 
-    * Add a gschemas.compiled file to avoid crash when the preamble file 
+    * Add a gschemas.compiled file to avoid crash when the preamble file
       chooser is openend.
 
 

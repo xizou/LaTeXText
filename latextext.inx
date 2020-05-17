@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
-	<name>Text with Latex</name>
+	<name>Text with LaTeX</name>
 	<id>org.inkscape.render.latextext</id>
-	<dependency type="executable" location="extensions">latextext.py</dependency>
-    <dependency type="executable" location="extensions">inkex.py</dependency>
-	<param name="preamble" type="string" gui-text="Preamble File"></param>
+	<dependency type="executable" location="inx">latextext.py</dependency>
+	<param name="preamble" type="string" gui-text="Preamble File">preambles/mathpreamble.tex</param>
 	<param name="packages" type="string" gui-text="Additional Packages">amsmath,amssymb</param>
 	<param name="depth" type="int" min="0" max="100" gui-text="SVG/XML tree max. depth">0</param>
 	<param name="fontsize" type="int" min="4" max="36" gui-text="Document base font size">10</param>
@@ -19,6 +18,6 @@
 		</effects-menu>
 	</effect>
 	<script>
-		<command reldir="extensions" interpreter="python">latextext.py</command>
+		<command location="inx" interpreter="python">latextext.py</command>
 	</script>
 </inkscape-extension>

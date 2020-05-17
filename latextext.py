@@ -70,7 +70,7 @@ def log_message(msg_level, *msg):
         print(*msg)
     else:
         for m in msg:
-            inkex.debug(m)
+            inkex.utils.debug(m)
 
 
 def set_log_level(l):
@@ -97,7 +97,7 @@ class SvgTransformer:
     def _matmult(self, a, b):
         zip_b = zip(*b)
         # uncomment next line if python 3 :
-        # zip_b = list(zip_b)
+        zip_b = list(zip_b)
         return [[sum(ele_a * ele_b for ele_a, ele_b in zip(row_a, col_b))
                  for col_b in zip_b] for row_a in a]
 
@@ -227,8 +227,8 @@ class SvgProcessor:
         self.options = options
         self.svg_input = infile
 
-        self.defaults = dict2obj({"scale": 1.0, "depth": 0.0, "fontsize": 10, 
-                                  "preamble": "","packages": "amsmath,amssymb","math": False, 
+        self.defaults = dict2obj({"scale": 1.0, "depth": 0.0, "fontsize": 10,
+                                  "preamble": "","packages": "amsmath,amssymb","math": False,
                                   "newline": False})
 
         # load from file or use existing document root
@@ -469,7 +469,7 @@ class SvgProcessor:
             if txt_empty:
                 log_debug("Empty text element, skipping...")
                 continue
-            if self.options.math and latex_string[0] is not '$':
+            if self.options.math and latex_string[0] != '$':
                 latex_string = '$' + latex_string + '$'
             log_debug(latex_string)
             rendergroup = lat2svg.render(latex_string, self.options.preamble, self.options.packages, self.options.fontsize, self.options.scale)
@@ -608,27 +608,21 @@ r"""\documentclass[%dpt]{%s}
 
 # commandline options shared by standalone application and inkscape extension
 def add_options(parser):
-    parser.add_option("-o", "--outfile", dest="outfile",
-                      help="write to output file or directory", metavar="FILE")
-    parser.add_option("-p", "--preamble", dest="preamble",
-                      help="latex preamble file", metavar="FILE")
-    parser.add_option("-k", "--packages", dest="packages",
-                     help="comma separated list of additional latex packages to be loaded", metavar="LIST")
-    parser.add_option("-f", "--fontsize", dest="fontsize", type="int",
-                      help="latex base font size")
-    parser.add_option("-s", "--scale", dest="scale", type="float",
-                      help="apply additional scaling")
-    parser.add_option("-d", "--depth", dest="depth", type="int",
-                      help="maximum search depth for grouped text elements")
-    parser.add_option("-n", "--newline", dest="newline",
-                      action="store_true",
-                      help="insert \\\\ at every line break")
-    parser.add_option("-m", "--math", dest="math",
-                      action="store_true",
-                      help="encapsulate all text in math mode")
-    parser.add_option("-c", "--clean",
-                      action="store_true", dest="clean",
-                      help="remove all renderings")
+    parser.add_argument("-o", "--outfile", dest="outfile",
+                        help="write to output file or directory", metavar="FILE")
+    parser.add_argument("-p", "--preamble", dest="preamble",
+                        help="latex preamble file", metavar="FILE")
+    parser.add_argument("-k", "--packages", dest="packages",
+                        help="comma separated list of additional latex packages to be loaded", metavar="LIST")
+    parser.add_argument("-f", "--fontsize", dest="fontsize", type=int,
+                        help="latex base font size")
+    parser.add_argument("-s", "--scale", dest="scale", type=float,
+                        help="apply additional scaling")
+    parser.add_argument("-d", "--depth", dest="depth", type=int,
+                        help="maximum search depth for grouped text elements")
+    parser.add_argument("-c", "--clean",
+                        action="store_true", dest="clean",
+                        help="remove all renderings")
 
 
 if STANDALONE is False:
@@ -636,16 +630,16 @@ if STANDALONE is False:
     class RenderLatexEffect(inkex.Effect):
         def __init__(self):
             inkex.Effect.__init__(self)
-            add_options(self.OptionParser)
-            self.OptionParser.set_conflict_handler("resolve")
-            self.OptionParser.add_option("-l", "--log", type='inkbool',
-                                         action="store", dest="debug", default=False,
+            add_options(self.arg_parser)
+            # self.arg_parser.set_conflict_handler("resolve")
+            self.arg_parser.add_argument("-l", "--log", type=inkex.Boolean,
+                                         dest="debug", default=False,
                                          help="show log messages in inkscape")
-            self.OptionParser.add_option("-n", "--newline", dest="newline",
-                                         action="store", type='inkbool',
+            self.arg_parser.add_argument("-n", "--newline", dest="newline",
+                                         type=inkex.Boolean,
                                          help="insert \newline at every line break")
-            self.OptionParser.add_option("-m", "--math", type='inkbool',
-                                         action="store", dest="math",
+            self.arg_parser.add_argument("-m", "--math", type=inkex.Boolean,
+                                         dest="math",
                                          help="encapsulate all text in math mode")
 
         def effect(self):
@@ -657,12 +651,20 @@ else:
     # Create a standalone commandline application
     def main_standalone():
         # parse commandline arguments
-        from optparse import OptionParser
-        parser = OptionParser(usage="usage: %prog [options] SVGfile(s)")
+        from argparse import ArgumentParser
+        parser = ArgumentParser(usage="usage: %prog [options] SVGfile(s)")
         add_options(parser)
-        parser.add_option("-v", "--verbose", default=False,
-                          action="store_true", dest="verbose")
-        (options, args) = parser.parse_args()
+        parser.add_argument("-v", "--verbose", default=False,
+                            action="store_true", dest="verbose")
+        parser.add_argument("-n", "--newline", dest="newline",
+                            action="store_true",
+                            help="insert \\\\ at every line break")
+        parser.add_argument("-m", "--math", dest="math",
+                            action="store_true",
+                            help="encapsulate all text in math mode")
+        # options = parser.parse_args()
+        options, args = parser.parse_known_args()
+        print(args)
 
         if options.verbose is True:
             set_log_level(log_level_debug)
@@ -708,6 +710,6 @@ if __name__ == "__main__":
     if STANDALONE is False:
         # run the extension
         effect = RenderLatexEffect()
-        effect.affect()
+        effect.run()
     else:
         main_standalone()
